@@ -9,13 +9,13 @@
 package raft
 
 import (
-	"config"
-	"model"
-	"mysql"
 	"testing"
 	"time"
-	"xbase/common"
-	"xbase/xlog"
+	"xenon/config"
+	"xenon/model"
+	"xenon/mysql"
+	"xenon/xbase/common"
+	"xenon/xbase/xlog"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -238,10 +238,10 @@ func TestRaftLeaderDown(t *testing.T) {
 // test the leader localcommit case
 //
 // TEST PROCESSES:
-// 1. Start 3 rafts state as FOLLOWER
-// 2. wait leader election from 3 FOLLOWER
-// 3. Stop leader wait new leader election from 2 FOLLOWER
-//    remock old leader to localcommit then wait a heartbeat timeout
+//  1. Start 3 rafts state as FOLLOWER
+//  2. wait leader election from 3 FOLLOWER
+//  3. Stop leader wait new leader election from 2 FOLLOWER
+//     remock old leader to localcommit then wait a heartbeat timeout
 func TestRaftLeaderLocalCommit(t *testing.T) {
 	var want, got State
 	var whoisleader int
@@ -323,9 +323,11 @@ func TestRaftLeaderLocalCommit(t *testing.T) {
 // how evil this testcase is!!!
 // we make these two raft clusters under diffraction patterns
 // to prevent this happenning again, we sit
-//   if !r.checkRequest(req) {
-//        return ErrorInvalidRequest
-//    }
+//
+//	if !r.checkRequest(req) {
+//	     return ErrorInvalidRequest
+//	 }
+//
 // at the door
 //
 // TEST PROCESSES:
@@ -1271,16 +1273,16 @@ func TestRaft11Rafts1Cluster(t *testing.T) {
 // test the leader election with gtid
 //
 // TEST PROCESSES:
-// 1. set rafts GTID
-//    1.0 rafts[0]  with MockGTIDB{Master_Log_File = "", Read_Master_Log_Pos = 0}
-//    1.1 rafts[1]  with MockGTIDB{Master_Log_File = "mysql-bin.000001", Read_Master_Log_Pos = 123
-//            gtid.Executed_GTID_Set = "c78e798a-cccc-cccc-cccc-525433e8e796:1"}
-//    1.2 rafts[2]  with MockGTIDC{Master_Log_File = "mysql-bin.000001", Read_Master_Log_Pos = 124
-//            gtid.Executed_GTID_Set = "c78e798a-cccc-cccc-cccc-525433e8e796:2"}
-// 2. Start 3 rafts state as FOLLOWER
-// 3. wait rafts[2] elected as leader
-// 4. Stop rafts[2]
-// 5. wait rafts[1] elected as new leader
+//  1. set rafts GTID
+//     1.0 rafts[0]  with MockGTIDB{Master_Log_File = "", Read_Master_Log_Pos = 0}
+//     1.1 rafts[1]  with MockGTIDB{Master_Log_File = "mysql-bin.000001", Read_Master_Log_Pos = 123
+//     gtid.Executed_GTID_Set = "c78e798a-cccc-cccc-cccc-525433e8e796:1"}
+//     1.2 rafts[2]  with MockGTIDC{Master_Log_File = "mysql-bin.000001", Read_Master_Log_Pos = 124
+//     gtid.Executed_GTID_Set = "c78e798a-cccc-cccc-cccc-525433e8e796:2"}
+//  2. Start 3 rafts state as FOLLOWER
+//  3. wait rafts[2] elected as leader
+//  4. Stop rafts[2]
+//  5. wait rafts[1] elected as new leader
 func TestRaftLeaderWithGTID(t *testing.T) {
 	var whoisleader int
 
@@ -1376,13 +1378,13 @@ func TestRaftLeaderWithGTID(t *testing.T) {
 // GTIDE with GetGTID error can't be elected as a leader
 //
 // TEST PROCESSES:
-// 1. set rafts GTID
-//    1.0 rafts[0]  with MockGTIDE{nil, err}
-//    1.1 rafts[1]  with MockGTIDB{Master_Log_File = "mysql-bin.000001", Read_Master_Log_Pos = 123}
-//    1.2 rafts[2]  with MockGTIDC{Master_Log_File = "mysql-bin.000001", Read_Master_Log_Pos = 124}
-// 2. Start 3 rafts state as FOLLOWER
-// 3. wait rafts[2] elected as leader
-// 4. Stop all rafts
+//  1. set rafts GTID
+//     1.0 rafts[0]  with MockGTIDE{nil, err}
+//     1.1 rafts[1]  with MockGTIDB{Master_Log_File = "mysql-bin.000001", Read_Master_Log_Pos = 123}
+//     1.2 rafts[2]  with MockGTIDC{Master_Log_File = "mysql-bin.000001", Read_Master_Log_Pos = 124}
+//  2. Start 3 rafts state as FOLLOWER
+//  3. wait rafts[2] elected as leader
+//  4. Stop all rafts
 func TestRaftWithFollowerGetSlaveGTIDError(t *testing.T) {
 	var whoisleader int
 
@@ -1444,14 +1446,14 @@ func TestRaftWithFollowerGetSlaveGTIDError(t *testing.T) {
 // test the leader purge binlog
 //
 // TEST PROCESSES:
-// 1. set rafts GTID
-//    1.0 rafts[0]  with MockGTID_X1{Master_Log_File = "mysql-bin.000001", Read_Master_Log_Pos = 123}
-//    1.1 rafts[1]  with MockGTID_X3{Master_Log_File = "mysql-bin.000003", Read_Master_Log_Pos = 123}
-//    1.2 rafts[2]  with MockGTID_X5{Master_Log_File = "mysql-bin.000005", Read_Master_Log_Pos = 123}
-// 2. Start 3 rafts state as FOLLOWER
-// 3. wait rafts[2] elected as leader
-// 4. check rafts[2] stats
-// 5. Stop all rafts
+//  1. set rafts GTID
+//     1.0 rafts[0]  with MockGTID_X1{Master_Log_File = "mysql-bin.000001", Read_Master_Log_Pos = 123}
+//     1.1 rafts[1]  with MockGTID_X3{Master_Log_File = "mysql-bin.000003", Read_Master_Log_Pos = 123}
+//     1.2 rafts[2]  with MockGTID_X5{Master_Log_File = "mysql-bin.000005", Read_Master_Log_Pos = 123}
+//  2. Start 3 rafts state as FOLLOWER
+//  3. wait rafts[2] elected as leader
+//  4. check rafts[2] stats
+//  5. Stop all rafts
 func TestRaftLeaderPurgeBinlog(t *testing.T) {
 	conf := config.DefaultRaftConfig()
 	conf.PurgeBinlogInterval = 1
@@ -1543,14 +1545,14 @@ func TestRaftLeaderPurgeBinlog(t *testing.T) {
 // test the leader check semi-sync
 //
 // TEST PROCESSES:
-// 1. set rafts GTID
-//    1.0 rafts[0]  with MockGTID_X1{Master_Log_File = "mysql-bin.000001", Read_Master_Log_Pos = 123}
-//    1.1 rafts[1]  with MockGTID_X3{Master_Log_File = "mysql-bin.000003", Read_Master_Log_Pos = 123}
-//    1.2 rafts[2]  with MockGTID_X5{Master_Log_File = "mysql-bin.000005", Read_Master_Log_Pos = 123}
-// 2. Start 3 rafts state as FOLLOWER
-// 3. wait rafts[2] elected as leader
-// 4. check rafts[2] skipCheckSemiSync
-// 5. Stop all rafts
+//  1. set rafts GTID
+//     1.0 rafts[0]  with MockGTID_X1{Master_Log_File = "mysql-bin.000001", Read_Master_Log_Pos = 123}
+//     1.1 rafts[1]  with MockGTID_X3{Master_Log_File = "mysql-bin.000003", Read_Master_Log_Pos = 123}
+//     1.2 rafts[2]  with MockGTID_X5{Master_Log_File = "mysql-bin.000005", Read_Master_Log_Pos = 123}
+//  2. Start 3 rafts state as FOLLOWER
+//  3. wait rafts[2] elected as leader
+//  4. check rafts[2] skipCheckSemiSync
+//  5. Stop all rafts
 func TestRaftLeaderCheckSemiSync(t *testing.T) {
 	conf := config.DefaultRaftConfig()
 	conf.MetaDatadir = "/tmp/"
@@ -1620,20 +1622,20 @@ func TestRaftLeaderCheckSemiSync(t *testing.T) {
 // test the follower change master to failed
 //
 // TEST PROCESSES:
-// 1.  set rafts GTID
+//  1. set rafts GTID
 //     1.0 rafts[0]  with MockGTID_X1{Master_Log_File = "mysql-bin.000001", Read_Master_Log_Pos = 123}
 //     1.1 rafts[1]  with MockGTID_X3{Master_Log_File = "mysql-bin.000003", Read_Master_Log_Pos = 123}
 //     1.2 rafts[2]  with MockGTID_X5{Master_Log_File = "mysql-bin.000005", Read_Master_Log_Pos = 123}
-// 2.  Start 3 rafts state as FOLLOWER
-// 3.  wait rafts[2] elected as leader
-// 4.  set rafts[2].MySQL to MockGTIDE(mock MySQL down)
-// 5.  wait rafts[1] elected as new-leader
-// 6.  wait rafts[1] send heartbeats to rafts[2]
-// 7.  rafts[2].MySQL change-master-to rafts[1].MySQL failed
-// 8.  check rafts[2].Leader is NULL, because change-master-to failed
-// 9.  set rafts[2].MySQL to OK
-// 10. rafts[2].MySQL change-master-to rafts[1].MySQL OK
-// 11. check rafts[2].Leader is rafts[1]
+//  2. Start 3 rafts state as FOLLOWER
+//  3. wait rafts[2] elected as leader
+//  4. set rafts[2].MySQL to MockGTIDE(mock MySQL down)
+//  5. wait rafts[1] elected as new-leader
+//  6. wait rafts[1] send heartbeats to rafts[2]
+//  7. rafts[2].MySQL change-master-to rafts[1].MySQL failed
+//  8. check rafts[2].Leader is NULL, because change-master-to failed
+//  9. set rafts[2].MySQL to OK
+//  10. rafts[2].MySQL change-master-to rafts[1].MySQL OK
+//  11. check rafts[2].Leader is rafts[1]
 func TestRaftChangeMasterToFail(t *testing.T) {
 	log := xlog.NewStdLog(xlog.Level(xlog.PANIC))
 	port := common.RandomPort(8000, 9000)
@@ -1836,13 +1838,13 @@ func TestRaft2Nodes(t *testing.T) {
 // test the 2 nodes leader election
 //
 // TEST PROCESSES:
-// 1.  set rafts GTID
+//  1. set rafts GTID
 //     1.0 rafts[0]  with MockGTID_X1{Master_Log_File = "mysql-bin.000001", Read_Master_Log_Pos = 123}
 //     1.1 rafts[1]  with MockGTID_X3{Master_Log_File = "mysql-bin.000003", Read_Master_Log_Pos = 123}
-// 2.  Start 2 rafts state as FOLLOWER
-// 3.  wait rafts[1] elected as leader
-// 4.  set rafts[1].MySQL to MockGTIDE(mock MySQL down)
-// 5.  wait rafts[0] elected as new-leader
+//  2. Start 2 rafts state as FOLLOWER
+//  3. wait rafts[1] elected as leader
+//  4. set rafts[1].MySQL to MockGTIDE(mock MySQL down)
+//  5. wait rafts[0] elected as new-leader
 func TestRaft2NodesWithGTID(t *testing.T) {
 	log := xlog.NewStdLog(xlog.Level(xlog.PANIC))
 	port := common.RandomPort(8000, 9000)
@@ -2054,14 +2056,14 @@ func TestRaftLeaderChangeToMasterError(t *testing.T) {
 // test election under LEARNER in the minority
 //
 // TEST PROCESSES:
-// 1.  set rafts GTID
+//  1. set rafts GTID
 //     1.0 rafts[0]  with MockGTID_X1{Master_Log_File = "mysql-bin.000001", Read_Master_Log_Pos = 123}
 //     1.1 rafts[1]  with MockGTID_X3{Master_Log_File = "mysql-bin.000003", Read_Master_Log_Pos = 123}
 //     1.2 rafts[2]  with MockGTID_X5{Master_Log_File = "mysql-bin.000005", Read_Master_Log_Pos = 123}
-// 2.  Start 3 rafts state as FOLLOWER
-// 3.  wait rafts[2] elected as leader
-// 4.  set rafts[0] to LEARNER
-// 5.  wait a few election cycles, the leader remains the same
+//  2. Start 3 rafts state as FOLLOWER
+//  3. wait rafts[2] elected as leader
+//  4. set rafts[0] to LEARNER
+//  5. wait a few election cycles, the leader remains the same
 func TestRaftElectionUnderLearnerInMinority(t *testing.T) {
 	log := xlog.NewStdLog(xlog.Level(xlog.PANIC))
 	port := common.RandomPort(8000, 9000)

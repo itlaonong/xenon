@@ -6,8 +6,8 @@ build: LDFLAGS   += $(shell GOPATH=${GOPATH} src/build/ldflags.sh)
 build:
 	@echo "--> Building..."
 	@mkdir -p bin/
-	go build -v -o bin/xenon    --ldflags '$(LDFLAGS)' src/xenon/xenon.go
-	go build -v -o bin/xenoncli --ldflags '$(LDFLAGS)' src/cli/cli.go
+	go build -v -o bin/xenon    --ldflags '$(LDFLAGS)' xenon/xenon.go
+	go build -v -o bin/xenoncli --ldflags '$(LDFLAGS)' cli/cli.go
 	@chmod 755 bin/*
 
 clean:
@@ -19,7 +19,7 @@ clean:
 
 install:
 	@echo "--> Installing..."
-	@install bin/xenon bin/xenonctl $(PREFIX)/sbin/
+	@install bin/xenon bin/xenoncli $(PREFIX)/sbin/
 
 fmt:
 	go fmt ./...

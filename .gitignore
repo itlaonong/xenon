@@ -8,3 +8,5 @@ config.path
 *.outs
 tags
 .vscode
+。idea
+*.iml
